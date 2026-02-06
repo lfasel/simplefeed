@@ -10,14 +10,25 @@
     max-width: 100%;
     padding: 0;
   }
-  .page {
-    width: 100%;
-    overflow-x: hidden;
-  }
-  .container {
+
+  .headerContent {
     max-width: 100%;
-    padding: 0;
+    padding: 10px 12px;
   }
+
+  .headerTitle {
+    font-size: 18px;
+  }
+
+  .headerControls {
+    gap: 8px;
+  }
+
+  .viewModeButtons button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
   .photoFeed {
     max-width: 100%;
     padding: 0;
@@ -27,21 +38,46 @@
 
 .page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Layout container: max 600px on large screens, centers content */
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-
-.topBar {
+/* Sticky header at the top */
+.header {
   position: sticky;
   top: 0;
-  z-index: 10;
-  padding-bottom: 10px;
+  z-index: 100;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.headerContent {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Content area scrolls below header */
+.content {
+  flex: 1;
+  overflow-y: auto;
 }
 
 
@@ -117,12 +153,44 @@
   font-size: 22px;
   cursor: pointer;
   padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.addPhotoBtn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.addPhotoBtn:active {
+  transform: scale(0.95);
 }
 
 .viewModeButtons {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.viewModeButtons button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.viewModeButtons button:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.viewModeButtons button.active {
+  background: #000;
+  color: white;
+  border-color: #000;
 }
 
 /* Modals and overlays */
@@ -241,10 +309,6 @@
 
 /* Make container and photos full width on mobile screens */
 @media (max-width: 768px) {
-  .container {
-    max-width: 100%;
-    padding: 0;
-  }
   .photoFeed {
     max-width: 100%;
     padding: 0;

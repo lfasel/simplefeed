@@ -3,6 +3,7 @@ import "./App.css";
 import { loadPhotos as fetchPhotos, handleUpload as uploadPhoto, handleUpdate as updatePhoto, handleDelete as deletePhoto } from "./utils/api.js";
 import { useDragDrop } from "./hooks/useDragDrop.js";
 import { usePhotoForm } from "./hooks/usePhotoForm.js";
+import Header from "./components/Header.jsx";
 import UploadModal from "./components/UploadModal.jsx";
 import PhotoFeed from "./components/PhotoFeed.jsx";
 import PhotoGrid from "./components/PhotoGrid.jsx";
@@ -97,69 +98,41 @@ export default function App() {
 
   return (
     <div className="page">
-      <div className="container">
-        <div className="topBar">
-          <h1>Life in Pictures</h1>
-          <button
-            type="button"
-            onClick={() => setIsUploadOpen(true)}
-            className="addPhotoBtn"
-            aria-label="Add photo"
-          >
-            +
-          </button>
+      <Header
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onAddPhoto={() => setIsUploadOpen(true)}
+        isDraggingFile={isDraggingFile}
+      />
 
-          <div className="viewModeButtons">
-            <button
-              type="button"
-              onClick={() => setViewMode("feed")}
-              disabled={viewMode === "feed"}
-            >
-              Feed
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              disabled={viewMode === "grid"}
-            >
-              Grid
-            </button>
-          </div>
-
-          {isDraggingFile && (
-            <div className="dragOverlay">
-              Drop a photo to upload
-            </div>
-          )}
-
-          <UploadModal
-            isOpen={isUploadOpen}
-            editingPhoto={editingPhoto}
-            previewUrl={form.previewUrl}
-            file={form.file}
-            caption={form.caption}
-            locationName={form.locationName}
-            takenAtLocal={form.takenAtLocal}
-            lat={form.lat}
-            lon={form.lon}
-            loading={loading}
-            onClose={closeUploadModal}
-            onFileChange={(e) => form.handleNewFile(e.target.files?.[0] ?? null)}
-            onCaptionChange={(e) => form.setCaption(e.target.value)}
-            onLocationNameChange={(e) => form.setLocationName(e.target.value)}
-            onTakenAtLocalChange={(e) => form.setTakenAtLocal(e.target.value)}
-            onLatChange={(e) => form.setLat(e.target.value)}
-            onLonChange={(e) => form.setLon(e.target.value)}
-            onSubmit={handleFormSubmit}
-          />
-        </div>
+      <div className="content">
+        {viewMode === "feed" ? (
+          <PhotoFeed photos={photos} postRefs={postRefs} onEdit={openEdit} onDelete={handleDeletePhoto} />
+        ) : (
+          <PhotoGrid photos={photos} onPhotoClick={goToPhoto} />
+        )}
       </div>
 
-      {viewMode === "feed" ? (
-        <PhotoFeed photos={photos} postRefs={postRefs} onEdit={openEdit} onDelete={handleDeletePhoto} />
-      ) : (
-        <PhotoGrid photos={photos} onPhotoClick={goToPhoto} />
-      )}
+      <UploadModal
+        isOpen={isUploadOpen}
+        editingPhoto={editingPhoto}
+        previewUrl={form.previewUrl}
+        file={form.file}
+        caption={form.caption}
+        locationName={form.locationName}
+        takenAtLocal={form.takenAtLocal}
+        lat={form.lat}
+        lon={form.lon}
+        loading={loading}
+        onClose={closeUploadModal}
+        onFileChange={(e) => form.handleNewFile(e.target.files?.[0] ?? null)}
+        onCaptionChange={(e) => form.setCaption(e.target.value)}
+        onLocationNameChange={(e) => form.setLocationName(e.target.value)}
+        onTakenAtLocalChange={(e) => form.setTakenAtLocal(e.target.value)}
+        onLatChange={(e) => form.setLat(e.target.value)}
+        onLonChange={(e) => form.setLon(e.target.value)}
+        onSubmit={handleFormSubmit}
+      />
     </div>
   );
 }
