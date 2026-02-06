@@ -1,0 +1,252 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  #root {
+    max-width: 100%;
+    padding: 0;
+  }
+  .page {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  .photoFeed {
+    max-width: 100%;
+    padding: 0;
+    width: 100%;
+  }
+}
+
+.page {
+  min-height: 100vh;
+}
+
+/* Layout container: max 600px on large screens, centers content */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-bottom: 10px;
+}
+
+
+.post {
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.card {
+  width: 100%;
+  overflow: hidden;
+  background: white;
+  box-sizing: border-box;
+}
+
+.photo {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.meta {
+  padding: 12px;
+}
+
+.photoFeed {
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.photoFrame {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-width: 600px;
+}
+
+.gridItem {
+  width: 100%;
+  aspect-ratio: 1 / 1;   /* makes it square */
+  overflow: hidden;
+  background: #111;
+}
+
+.gridImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;    /* square crop like Instagram */
+  display: block;
+}
+
+/* Buttons */
+.addPhotoBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.viewModeButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Modals and overlays */
+.dragOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  pointer-events: none;
+  font-size: 18px;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.modalContent {
+  width: min(720px, 100%);
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #ddd;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.closeBtn {
+  font-size: 18px;
+}
+
+.previewContainer {
+  margin-bottom: 12px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 30vh;
+}
+
+.previewImg {
+  max-width: 100%;
+  max-height: 30vh;
+  object-fit: contain;
+  display: block;
+}
+
+.uploadForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formFileInfo {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.coordInputs {
+  display: flex;
+  gap: 8px;
+}
+
+.coordInputs input {
+  flex: 1;
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+/* Photo metadata */
+.photoCaption {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.photoDate {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.photoLocation {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.deleteBtn {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* Make container and photos full width on mobile screens */
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  .photoFeed {
+    max-width: 100%;
+    padding: 0;
+  }
+}
