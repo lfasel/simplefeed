@@ -1,36 +1,93 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import * as exifr from "exifr";
-
-const API = "http://localhost:4000";
+import { loadPhotos as fetchPhotos, handleUpload as uploadPhoto, handleUpdate as updatePhoto, handleDelete as deletePhoto } from "./utils/api.js";
+import { useDragDrop } from "./hooks/useDragDrop.js";
+import { usePhotoForm } from "./hooks/usePhotoForm.js";
+import UploadModal from "./components/UploadModal.jsx";
+import PhotoFeed from "./components/PhotoFeed.jsx";
+import PhotoGrid from "./components/PhotoGrid.jsx";
 
 export default function App() {
   const [photos, setPhotos] = useState([]);
-  const [caption, setCaption] = useState("");
-  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [takenAtLocal, setTakenAtLocal] = useState("");
-  const [locationName, setLocationName] = useState("");
-  const [lat, setLat] = useState("");
-  const [lon, setLon] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [viewMode, setViewMode] = useState("feed"); // "feed" | "grid"
+  const [viewMode, setViewMode] = useState("feed");
+  const [editingPhoto, setEditingPhoto] = useState(null);
   const postRefs = useRef(new Map());
-  const [editingPhoto, setEditingPhoto] = useState(null); // holds photo object or null
 
+  const form = usePhotoForm();
 
-  function setPostRef(id) {
-    return (el) => {
-      if (el) postRefs.current.set(id, el);
-      else postRefs.current.delete(id);
-    };
+  // Load photos on mount
+  useEffect(() => {
+    (async () => {
+      const data = await fetchPhotos();
+      setPhotos(data);
+    })();
+  }, []);
+
+  // Setup drag-drop
+  useDragDrop(
+    () => setIsDraggingFile(true),
+    () => setIsDraggingFile(false),
+    null,
+    async (file) => {
+      setIsUploadOpen(true);
+      await form.handleNewFile(file);
+    }
+  );
+
+  function openEdit(photo) {
+    setEditingPhoto(photo);
+    setIsUploadOpen(true);
+    form.prefillFromPhoto(photo);
+  }
+
+  function closeUploadModal() {
+    setIsUploadOpen(false);
+    setEditingPhoto(null);
+    form.resetForm();
+  }
+
+  async function handleFormSubmit(e) {
+    e.preventDefault();
+    if (!form.file) return;
+
+    setLoading(true);
+    try {
+      const formData = form.createFormData();
+
+      if (editingPhoto) {
+        await updatePhoto(editingPhoto.id, formData);
+      } else {
+        await uploadPhoto(formData);
+      }
+
+      const data = await fetchPhotos();
+      setPhotos(data);
+      closeUploadModal();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDeletePhoto(photo) {
+    const ok = window.confirm("Delete this photo? This cannot be undone.");
+    if (!ok) return;
+
+    try {
+      await deletePhoto(photo.id);
+      const data = await fetchPhotos();
+      setPhotos(data);
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   function goToPhoto(id) {
     setViewMode("feed");
-    // wait for feed render, then scroll
     setTimeout(() => {
       const el = postRefs.current.get(id);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -38,220 +95,7 @@ export default function App() {
   }
 
 
-  async function loadPhotos() {
-    const res = await fetch(`${API}/api/photos`);
-    const data = await res.json();
-    setPhotos(data);
-  }
-
-  useEffect(() => {
-    loadPhotos();
-  }, []);
-
-  function isoToDatetimeLocal(iso) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  function openEdit(p) {
-    setEditingPhoto(p);
-    setIsUploadOpen(true);
-
-    // Prefill fields
-    setCaption(p.caption ?? "");
-    setLocationName(p.locationName ?? "");
-    setTakenAtLocal(isoToDatetimeLocal(p.takenAt));
-    setLat(p.lat != null ? String(p.lat) : "");
-    setLon(p.lon != null ? String(p.lon) : "");
-
-    // Show current image as preview
-    setPreviewUrl(`${API}${p.url}`);
-    setFile(null); // optional: user can choose a replacement image
-  }
-
-  useEffect(() => {
-  function hasFiles(e) {
-    return Array.from(e.dataTransfer?.types || []).includes("Files");
-  }
-
-  function onDragEnter(e) {
-    if (!hasFiles(e)) return;
-    e.preventDefault();
-    setIsDraggingFile(true);
-  }
-
-  function onDragOver(e) {
-    if (!hasFiles(e)) return;
-    e.preventDefault();
-  }
-
-  function onDragLeave(e) {
-    // Only close when leaving window
-    if (e.target === document.documentElement) setIsDraggingFile(false);
-  }
-
-  async function onDrop(e) {
-    if (!hasFiles(e)) return;
-    e.preventDefault();
-    setIsDraggingFile(false);
-
-    const dropped = e.dataTransfer.files?.[0];
-    if (dropped) {
-      setIsUploadOpen(true);
-      await handleNewFile(dropped);
-    }
-  }
-
-  window.addEventListener("dragenter", onDragEnter);
-  window.addEventListener("dragover", onDragOver);
-  window.addEventListener("dragleave", onDragLeave);
-  window.addEventListener("drop", onDrop);
-
-  return () => {
-    window.removeEventListener("dragenter", onDragEnter);
-    window.removeEventListener("dragover", onDragOver);
-    window.removeEventListener("dragleave", onDragLeave);
-    window.removeEventListener("drop", onDrop);
-  };
-}, []);
-
-
-  async function handleUpload(e) {
-    e.preventDefault();
-    if (!file) return;
-
-    setLoading(true);
-    try {
-      let takenAtISO = "";
-      if (takenAtLocal) {
-        takenAtISO = new Date(takenAtLocal).toISOString();
-      }
-      const form = new FormData();
-      form.append("image", file);
-      form.append("caption", caption);
-      form.append("takenAt", takenAtISO);
-      form.append("locationName", locationName);
-      form.append("lat", lat);
-      form.append("lon", lon);
-
-      const res = await fetch(`${API}/api/photos`, {
-        method: "POST",
-        body: form,
-      });
-
-      if (!res.ok) throw new Error("Upload failed");
-      setCaption("");
-      setFile(null);
-      setTakenAtLocal("");
-      setLocationName("");
-      setLat("");
-      setLon("");
-      await loadPhotos();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleUpdate(photoId) {
-    setLoading(true);
-    try {
-      let takenAtISO = "";
-      if (takenAtLocal) {
-        takenAtISO = new Date(takenAtLocal).toISOString();
-      }
-      const form = new FormData();
-      if (file) form.append("image", file);
-      form.append("caption", caption);
-      form.append("takenAt", takenAtISO);
-      form.append("locationName", locationName);
-      form.append("lat", lat);
-      form.append("lon", lon);
-
-      const res = await fetch(`${API}/api/photos/${photoId}`, {
-        method: "PUT",
-        body: form,
-      });
-
-      if (!res.ok) throw new Error("Update failed");
-      setCaption("");
-      setFile(null);
-      setTakenAtLocal("");
-      setLocationName("");
-      setLat("");
-      setLon("");
-      await loadPhotos();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function closeUploadModal() {
-    setIsUploadOpen(false);
-    setEditingPhoto(null);
-    setFile(null);
-    setPreviewUrl((prev) => {
-      if (prev && prev.startsWith("blob:")) URL.revokeObjectURL(prev);
-      return null;
-    });
-  }
-
-
-  async function handleNewFile(f) {
-    setFile(f);
-    if (!f) return;
-
-    // Clean up old preview (important to avoid memory leaks)
-    setPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(f);
-    });
-
-    // Reset fields
-    setTakenAtLocal("");
-    setLat("");
-    setLon("");
-    setLocationName("");
-    setCaption("");
-
-    try {
-      const exif = await exifr.parse(f, { gps: true });
-
-      const dt = exif?.DateTimeOriginal || exif?.CreateDate || exif?.ModifyDate;
-      if (dt instanceof Date) {
-        const pad = (n) => String(n).padStart(2, "0");
-        const local = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
-        setTakenAtLocal(local);
-      }
-
-      if (typeof exif?.latitude === "number") setLat(String(exif.latitude));
-      if (typeof exif?.longitude === "number") setLon(String(exif.longitude));
-    } catch {
-      // ignore
-    }
-  }
-
-
-  async function handleDelete(photo) {
-  const ok = window.confirm("Delete this photo? This cannot be undone.");
-  if (!ok) return;
-
-  const res = await fetch(`${API}/api/photos/${photo.id}`, {
-    method: "DELETE",
-  });
-
-  if (!res.ok) {
-    alert("Delete failed");
-    return;
-  }
-
-  await loadPhotos();
-  }
-
-
   return (
-    
     <div className="page">
       <div className="container">
         <div className="topBar">
@@ -264,7 +108,7 @@ export default function App() {
           >
             +
           </button>
-          
+
           <div className="viewModeButtons">
             <button
               type="button"
@@ -273,10 +117,14 @@ export default function App() {
             >
               Feed
             </button>
-            <button type="button" onClick={() => setViewMode("grid")} disabled={viewMode === "grid"}>Grid
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              disabled={viewMode === "grid"}
+            >
+              Grid
             </button>
           </div>
-
 
           {isDraggingFile && (
             <div className="dragOverlay">
@@ -284,113 +132,33 @@ export default function App() {
             </div>
           )}
 
-          {isUploadOpen && (
-            <div
-              onMouseDown={(e) => {
-                // click outside closes
-                if (e.target === e.currentTarget) closeUploadModal();
-              }}
-              className="modalOverlay"
-            >
-              <div className="modalContent">
-                {previewUrl && (
-                  <div className="previewContainer">
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="previewImg"
-                    />
-                  </div>
-                )}
-
-                <div className="modalHeader">
-                  <h2>Upload photo</h2>
-                  <button type="button" onClick={() => closeUploadModal()} className="closeBtn">
-                    ✕
-                  </button>
-                </div>
-                
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (editingPhoto) {
-                        await handleUpdate(editingPhoto.id);
-                      } else {
-                        await handleUpload(e);
-                      }
-                    closeUploadModal();
-                  }}
-                  className="uploadForm"
-                >
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>
-                    {editingPhoto ? "Replace image (optional)" : "Choose image"}
-                  </div>
-                  <input type="file" accept="image/*" onChange={(e) => handleNewFile(e.target.files?.[0] ?? null)} />
-
-                  {file && (
-                    <div className="formFileInfo">
-                      Selected: <strong>{file.name}</strong>
-                    </div>
-                  )}
-
-                  <input placeholder="Caption" value={caption} onChange={(e) => setCaption(e.target.value)} />
-                  <input placeholder="Location name (optional)" value={locationName} onChange={(e) => setLocationName(e.target.value)} />
-                  <input type="datetime-local" value={takenAtLocal} onChange={(e) => setTakenAtLocal(e.target.value)} />
-
-                  <div className="coordInputs">
-                    <input placeholder="Latitude (optional)" value={lat} onChange={(e) => setLat(e.target.value)} />
-                    <input placeholder="Longitude (optional)" value={lon} onChange={(e) => setLon(e.target.value)} />
-                  </div>
-
-                  <div className="formActions">
-                    <button type="button" onClick={() => closeUploadModal()}>
-                      Cancel
-                    </button>
-                    <button disabled={!file || loading}>
-                      {loading ? "Uploading..." : "Upload"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
+          <UploadModal
+            isOpen={isUploadOpen}
+            editingPhoto={editingPhoto}
+            previewUrl={form.previewUrl}
+            file={form.file}
+            caption={form.caption}
+            locationName={form.locationName}
+            takenAtLocal={form.takenAtLocal}
+            lat={form.lat}
+            lon={form.lon}
+            loading={loading}
+            onClose={closeUploadModal}
+            onFileChange={(e) => form.handleNewFile(e.target.files?.[0] ?? null)}
+            onCaptionChange={(e) => form.setCaption(e.target.value)}
+            onLocationNameChange={(e) => form.setLocationName(e.target.value)}
+            onTakenAtLocalChange={(e) => form.setTakenAtLocal(e.target.value)}
+            onLatChange={(e) => form.setLat(e.target.value)}
+            onLonChange={(e) => form.setLon(e.target.value)}
+            onSubmit={handleFormSubmit}
+          />
         </div>
       </div>
-      {viewMode==="feed" ? (
-      <div className="photoFeed">
-        {photos.map((p) => (
-          <div className="post" key={p.id} ref={setPostRef(p.id)}>
-            <article className="card">
-              <div className="photoFrame">
-                <img className="photo" src={`${API}${p.url}`} alt={p.caption} />
-              </div>
-              <div className="meta">
-                <div className="photoCaption">{p.caption}</div>
-                {p.takenAt && (
-                <div className="photoDate">
-                  {new Date(p.takenAt).toLocaleString()}
-                </div>)}
-                {p.locationName && (
-                  <div className="photoLocation">
-                    {p.locationName} {p.lat && p.lon && `(${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})`}
-                  </div>
-                )}
-                <button type="button" onClick={() => openEdit(p)} style={{ marginTop: 10 }}>Edit</button>
-                <button onClick={() => handleDelete(p)} className="deleteBtn">Delete</button>
-              </div>
-            </article>
-          </div>
-        ))}
-      </div>
+
+      {viewMode === "feed" ? (
+        <PhotoFeed photos={photos} postRefs={postRefs} onEdit={openEdit} onDelete={handleDeletePhoto} />
       ) : (
-        <div className="grid">
-          {photos.map((p) => (
-            <div className="gridItem" key={p.id} onClick={() => goToPhoto(p.id)} style={{cursor: "pointer"}}>
-              <img className="gridImg" src={`${API}${p.url}`} alt="" />
-            </div>
-          ))}
-        </div>
+        <PhotoGrid photos={photos} onPhotoClick={goToPhoto} />
       )}
     </div>
   );
