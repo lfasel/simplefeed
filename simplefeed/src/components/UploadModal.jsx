@@ -35,7 +35,7 @@ export default function UploadModal({
         )}
 
         <div className="modalHeader">
-          <h2>Upload photo</h2>
+          <h2>{editingPhoto ? "Edit photo" : "Upload photo"}</h2>
           <button type="button" onClick={onClose} className="closeBtn">
             ✕
           </button>
@@ -82,8 +82,8 @@ export default function UploadModal({
             <button type="button" onClick={onClose}>
               Cancel
             </button>
-            <button disabled={!file || loading}>
-              {loading ? "Uploading..." : "Upload"}
+            <button disabled={(!editingPhoto && !file) || loading}>
+              {loading ? "Saving..." : editingPhoto ? "Save" : "Upload"}
             </button>
           </div>
         </form>

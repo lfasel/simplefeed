@@ -52,7 +52,7 @@ export default function App() {
 
   async function handleFormSubmit(e) {
     e.preventDefault();
-    if (!form.file) return;
+    if (!editingPhoto && !form.file) return;
 
     setLoading(true);
     try {
