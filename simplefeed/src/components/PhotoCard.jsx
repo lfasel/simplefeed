@@ -23,6 +23,7 @@ export default function PhotoCard({ photo, onEdit, onDelete }) {
                 )}
                 {photo.locationName && (
                   <div className="photoLocation">
+                    {photo.takenAt && " \u2014  "}
                     {photo.locationName} {photo.lat && photo.lon && `(${photo.lat.toFixed(4)}, ${photo.lon.toFixed(4)})`}
                   </div>
                 )}
