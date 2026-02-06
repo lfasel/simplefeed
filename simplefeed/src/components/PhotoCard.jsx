@@ -20,12 +20,14 @@ export default function PhotoCard({ photo, onEdit, onDelete }) {
             {photo.locationName} {photo.lat && photo.lon && `(${photo.lat.toFixed(4)}, ${photo.lon.toFixed(4)})`}
           </div>
         )}
-        <button type="button" onClick={() => onEdit(photo)} style={{ marginTop: 10 }}>
-          Edit
-        </button>
-        <button onClick={() => onDelete(photo)} className="deleteBtn">
-          Delete
-        </button>
+        <div className="photoActions">
+          <button type="button" onClick={() => onEdit(photo)} className="actionBtn">
+            Edit
+          </button>
+          <button onClick={() => onDelete(photo)} className="actionBtn danger">
+            Delete
+          </button>
+        </div>
       </div>
     </article>
   );

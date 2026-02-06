@@ -302,9 +302,30 @@
   margin-bottom: 8px;
 }
 
-.deleteBtn {
-  font-size: 12px;
-  padding: 4px 8px;
+.photoActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.actionBtn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.actionBtn.danger:hover {
+  border-color: #c0392b;
+  color: #c0392b;
 }
 
 /* Make container and photos full width on mobile screens */
