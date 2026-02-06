@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local server data
+simplefeed-server/photos.db
+simplefeed-server/uploads/
