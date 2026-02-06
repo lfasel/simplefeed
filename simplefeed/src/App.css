@@ -17,16 +17,40 @@
   }
 
   .headerTitle {
-    font-size: 18px;
+    gap: 2px;
+  }
+
+  .headerTitleIcon {
+    width: 140px;
+  }
+
+  .headerSubtitle {
+    font-size: 12px;
+    max-width: 120px;
   }
 
   .headerControls {
     gap: 8px;
   }
 
+  .addPhotoBtn {
+    padding: 8px 10px;
+    min-height: 32px;
+  }
+
+  .addPhotoBtn img {
+    width: 22px;
+    height: 22px;
+  }
+
   .viewModeButtons button {
-    font-size: 12px;
-    padding: 6px 10px;
+    padding: 8px 10px;
+    min-height: 32px;
+  }
+
+  .viewModeButtons button img {
+    width: 22px;
+    height: 22px;
   }
 
   .photoFeed {
@@ -63,15 +87,33 @@
 }
 
 .headerTitle {
-  margin: 0;
-  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
+}
+
+.headerTitleIcon {
+  width: 180px;
+  height: auto;
+  display: block;
+}
+
+.headerSubtitle {
+  font-size: 14px;
+  text-transform: lowercase;
+  letter-spacing: 6px;
+  opacity: 0.8;
+  text-align: center;
+  max-width: 150px;
 }
 
 .headerControls {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
 }
 
 /* Content area scrolls below header */
@@ -144,17 +186,24 @@
 }
 
 /* Buttons */
+.headerAdd {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
 .addPhotoBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
+  padding: 12px 12px;
   border: 1px solid #ddd;
   background: white;
-  font-size: 22px;
+  border-radius: 16px;
   cursor: pointer;
-  padding: 0;
+  font-size: 14px;
   transition: all 0.2s ease;
-  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
 }
 
 .addPhotoBtn:hover {
@@ -163,7 +212,7 @@
 }
 
 .addPhotoBtn:active {
-  transform: scale(0.95);
+  transform: scale(0.98);
 }
 
 .viewModeButtons {
@@ -173,13 +222,17 @@
 }
 
 .viewModeButtons button {
-  padding: 8px 16px;
+  padding: 12px 12px;
   border: 1px solid #ddd;
   background: white;
-  border-radius: 6px;
+  border-radius: 16px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
 }
 
 .viewModeButtons button:hover {
@@ -191,6 +244,24 @@
   background: #000;
   color: white;
   border-color: #000;
+}
+
+.addPhotoBtn img {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+
+.viewModeButtons button img {
+  width: 40px;
+  height: 40px;
+  display: block;
+  filter: grayscale(1) brightness(0);
+  transition: filter 0.2s ease;
+}
+
+.viewModeButtons button.active img {
+  filter: brightness(0) invert(1);
 }
 
 /* Modals and overlays */
@@ -288,24 +359,61 @@
 .photoCaption {
   font-size: 14px;
   margin-bottom: 6px;
+  text-align: left;
 }
 
 .photoDate {
   font-size: 12px;
   opacity: 0.6;
   margin-bottom: 8px;
+  text-align: left;
 }
 
 .photoLocation {
   font-size: 12px;
   opacity: 0.6;
   margin-bottom: 8px;
+  text-align: left;
+}
+
+.photoMetaRow {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: nowrap;
+}
+
+.photoMetaRow .photoDate,
+.photoMetaRow .photoLocation {
+  margin-bottom: 8px;
+}
+
+.photoMetaRow .photoLocation {
+  white-space: nowrap;
+}
+
+.photoMetaActionsRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.photoMetaActionsRow .photoMetaBlock {
+  flex: 1;
+  min-width: 0;
+}
+
+.photoMetaActionsRow .photoActions {
+  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .photoActions {
   display: flex;
   gap: 8px;
   margin-top: 10px;
+  justify-content: flex-end;
 }
 
 .actionBtn {
@@ -316,6 +424,10 @@
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
 }
 
 .actionBtn:hover {
@@ -326,6 +438,18 @@
 .actionBtn.danger:hover {
   border-color: #c0392b;
   color: #c0392b;
+}
+
+.actionBtn img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  filter: grayscale(1) brightness(0);
+  transition: filter 0.2s ease;
+}
+
+.actionBtn.danger:hover img {
+  filter: none;
 }
 
 /* Make container and photos full width on mobile screens */

@@ -1,3 +1,8 @@
+import addIcon from "../assets/add.svg";
+import feedIcon from "../assets/feed.svg";
+import gridIcon from "../assets/grid.svg";
+import lifeIcon from "../assets/life.svg";
+
 export default function Header({
   viewMode,
   onViewModeChange,
@@ -7,18 +12,23 @@ export default function Header({
   return (
     <header className="header">
       <div className="headerContent">
-        <h1 className="headerTitle">Life in Pictures</h1>
+        <div className="headerTitle">
+          <img src={lifeIcon} alt="Life" className="headerTitleIcon" />
+          <div className="headerSubtitle">in pictures</div>
+        </div>
 
         <div className="headerControls">
-          <button
-            type="button"
-            onClick={onAddPhoto}
-            className="addPhotoBtn"
-            aria-label="Add photo"
-            title="Add a new photo"
-          >
-            +
-          </button>
+          <div className="headerAdd">
+            <button
+              type="button"
+              onClick={onAddPhoto}
+              className="headerBtn addPhotoBtn"
+              aria-label="Add photo"
+              title="Add a new photo"
+            >
+              <img src={addIcon} alt="" aria-hidden="true" />
+            </button>
+          </div>
 
           <div className="viewModeButtons">
             <button
@@ -27,7 +37,7 @@ export default function Header({
               className={viewMode === "feed" ? "active" : ""}
               aria-label="Switch to feed view"
             >
-              Feed
+              <img src={feedIcon} alt="" aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -35,7 +45,7 @@ export default function Header({
               className={viewMode === "grid" ? "active" : ""}
               aria-label="Switch to grid view"
             >
-              Grid
+              <img src={gridIcon} alt="" aria-hidden="true" />
             </button>
           </div>
         </div>
