@@ -5,8 +5,8 @@ const BUCKET = "photos";
 const SIGNED_URL_TTL = 60 * 60; // 1 hour
 const GRID_MAX_SIZE = 480;
 const FEED_MAX_SIZE = 1400;
-const GRID_QUALITY = 0.7;
-const FEED_QUALITY = 0.8;
+const GRID_QUALITY = 0.8;
+const FEED_QUALITY = 0.9;
 
 function makeBaseName(file) {
   const rand = Math.random().toString(36).slice(2, 10);

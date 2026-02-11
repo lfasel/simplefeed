@@ -1,63 +1,8 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
-}
-
-@media (max-width: 768px) {
-  #root {
-    max-width: 100%;
-    padding: 0;
-  }
-
-  .headerContent {
-    max-width: 100%;
-    padding: 10px 12px;
-  }
-
-  .headerTitle {
-    gap: 2px;
-  }
-
-  .headerTitleIcon {
-    width: 140px;
-  }
-
-  .headerSubtitle {
-    font-size: 12px;
-    max-width: 120px;
-  }
-
-  .headerControls {
-    gap: 8px;
-  }
-
-  .addPhotoBtn {
-    padding: 8px 10px;
-    min-height: 32px;
-  }
-
-  .addPhotoBtn img {
-    width: 22px;
-    height: 22px;
-  }
-
-  .viewModeButtons button {
-    padding: 8px 10px;
-    min-height: 32px;
-  }
-
-  .viewModeButtons button img {
-    width: 22px;
-    height: 22px;
-  }
-
-  .photoFeed {
-    max-width: 100%;
-    padding: 0;
-    width: 100%;
-  }
 }
 
 .page {
@@ -79,40 +24,40 @@
 .headerContent {
   max-width: 600px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 10px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .headerTitle {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
 }
 
 .headerTitleIcon {
-  width: 180px;
+  width: 140px;
   height: auto;
   display: block;
 }
 
 .headerSubtitle {
-  font-size: 14px;
+  font-size: 10px;
   text-transform: lowercase;
   letter-spacing: 6px;
   opacity: 0.8;
   text-align: center;
-  max-width: 150px;
+  max-width: 120px;
 }
 
 .headerControls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex: 1;
 }
 
@@ -193,17 +138,17 @@
 }
 
 .addPhotoBtn {
-  padding: 12px 12px;
-  border: 3px solid #000;
+  padding: 8px 10px;
+  border: 2px solid #000;
   background: aquamarine;
-  border-radius: 16px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
+  min-height: 32px;
 }
 
 .addPhotoBtn:hover {
@@ -222,17 +167,17 @@
 }
 
 .viewModeButtons button {
-  padding: 12px 12px;
-  border: 3px solid #000;
+  padding: 8px 10px;
+  border: 2px solid #000;
   background: white;
-  border-radius: 16px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
+  min-height: 32px;
 }
 
 .viewModeButtons button:hover {
@@ -247,14 +192,14 @@
 }
 
 .addPhotoBtn img {
-  width: 40px;
-  height: 40px;
+  width: 22px;
+  height: 22px;
   display: block;
 }
 
 .viewModeButtons button img {
-  width: 40px;
-  height: 40px;
+  width: 22px;
+  height: 22px;
   display: block;
   filter: grayscale(1) brightness(0);
   transition: filter 0.2s ease;
@@ -447,6 +392,59 @@
 
 .actionBtn.danger:hover img {
   filter: none;
+}
+
+/* Scale up on larger screens */
+@media (min-width: 769px) {
+  #root {
+    padding: 2rem;
+  }
+
+  .headerContent {
+    padding: 12px 16px;
+    gap: 16px;
+  }
+
+  .headerTitle {
+    gap: 4px;
+  }
+
+  .headerTitleIcon {
+    width: 180px;
+  }
+
+  .headerSubtitle {
+    font-size: 14px;
+    max-width: 150px;
+  }
+
+  .headerControls {
+    gap: 12px;
+  }
+
+  .addPhotoBtn {
+    padding: 12px 12px;
+    border-width: 3px;
+    border-radius: 16px;
+    min-height: 36px;
+  }
+
+  .addPhotoBtn img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .viewModeButtons button {
+    padding: 12px 12px;
+    border-width: 3px;
+    border-radius: 16px;
+    min-height: 36px;
+  }
+
+  .viewModeButtons button img {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* Make container and photos full width on mobile screens */

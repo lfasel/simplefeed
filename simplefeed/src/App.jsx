@@ -181,10 +181,6 @@ export default function App() {
         isDraggingFile={isDraggingFile}
       />
 
-      <div className="content" style={{ marginBottom: 8 }}>
-        <button onClick={handleLogout}>Sign out</button>
-      </div>
-
       <div className="content">
         {viewMode === "feed" ? (
           <PhotoFeed photos={photos} postRefs={postRefs} onEdit={openEdit} onDelete={handleDeletePhoto} />
@@ -213,6 +209,10 @@ export default function App() {
         onLonChange={(e) => form.setLon(e.target.value)}
         onSubmit={handleFormSubmit}
       />
+
+      <div className="content" style={{ marginTop: 16 }}>
+        <button onClick={handleLogout}>Sign out</button>
+      </div>
     </div>
   );
 }
