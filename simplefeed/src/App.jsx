@@ -7,8 +7,13 @@ import Header from "./components/Header.jsx";
 import UploadModal from "./components/UploadModal.jsx";
 import PhotoFeed from "./components/PhotoFeed.jsx";
 import PhotoGrid from "./components/PhotoGrid.jsx";
+import { supabase } from "./utils/supabaseClient.js";
 
 export default function App() {
+  const [session, setSession] = useState(null);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -19,13 +24,34 @@ export default function App() {
 
   const form = usePhotoForm();
 
-  // Load photos on mount
+  // Auth session
   useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!isMounted) return;
+      if (error) setAuthError(error.message);
+      setSession(data?.session ?? null);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+
+    return () => {
+      isMounted = false;
+      sub?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  // Load photos after login
+  useEffect(() => {
+    if (!session) return;
     (async () => {
       const data = await fetchPhotos();
       setPhotos(data);
     })();
-  }, []);
+  }, [session]);
 
   // Setup drag-drop
   useDragDrop(
@@ -59,7 +85,10 @@ export default function App() {
       const formData = form.createFormData();
 
       if (editingPhoto) {
-        await updatePhoto(editingPhoto.id, formData);
+        await updatePhoto(editingPhoto.id, formData, {
+          grid: editingPhoto.storagePathGrid,
+          feed: editingPhoto.storagePathFeed,
+        });
       } else {
         await uploadPhoto(formData);
       }
@@ -79,7 +108,10 @@ export default function App() {
     if (!ok) return;
 
     try {
-      await deletePhoto(photo.id);
+      await deletePhoto(photo.id, {
+        grid: photo.storagePathGrid,
+        feed: photo.storagePathFeed,
+      });
       const data = await fetchPhotos();
       setPhotos(data);
     } catch (error) {
@@ -95,6 +127,50 @@ export default function App() {
     }, 0);
   }
 
+  async function handleLogin(e) {
+    e.preventDefault();
+    setAuthError("");
+    const { error } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: authPassword,
+    });
+    if (error) setAuthError(error.message);
+  }
+
+  async function handleLogout() {
+    setAuthError("");
+    await supabase.auth.signOut();
+  }
+
+  if (!session) {
+    return (
+      <div className="page">
+        <div className="content" style={{ maxWidth: 420, margin: "0 auto" }}>
+          <h2>Sign in</h2>
+          <form onSubmit={handleLogin}>
+            <div style={{ display: "grid", gap: 12 }}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                required
+              />
+              <button type="submit">Sign in</button>
+              {authError ? <div style={{ color: "crimson" }}>{authError}</div> : null}
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page">
@@ -104,6 +180,10 @@ export default function App() {
         onAddPhoto={() => setIsUploadOpen(true)}
         isDraggingFile={isDraggingFile}
       />
+
+      <div className="content" style={{ marginBottom: 8 }}>
+        <button onClick={handleLogout}>Sign out</button>
+      </div>
 
       <div className="content">
         {viewMode === "feed" ? (

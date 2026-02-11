@@ -38,7 +38,7 @@ export function usePhotoForm() {
     setTakenAtLocal(isoToDatetimeLocal(photo.takenAt));
     setLat(photo.lat != null ? String(photo.lat) : "");
     setLon(photo.lon != null ? String(photo.lon) : "");
-    setPreviewUrl(`http://localhost:4000${photo.url}`);
+    setPreviewUrl(photo.feedUrl);
     setFile(null);
   }
 

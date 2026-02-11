@@ -1,14 +1,11 @@
-import { getAPIUrl } from "../utils/api.js";
 import editIcon from "../assets/edit.svg";
 import deleteIcon from "../assets/delete.svg";
 
 export default function PhotoCard({ photo, onEdit, onDelete }) {
-  const API = getAPIUrl();
-
   return (
     <article className="card">
       <div className="photoFrame">
-        <img className="photo" src={`${API}${photo.url}`} alt={photo.caption} />
+        <img className="photo" src={photo.feedUrl} alt={photo.caption} />
       </div>
       <div className="meta">
         <div className="photoMetaActionsRow">
