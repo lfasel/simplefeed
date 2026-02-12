@@ -42,7 +42,7 @@ export default function UploadModal({
         </div>
 
         <form onSubmit={onSubmit} className="uploadForm">
-          <div style={{ fontSize: 12, opacity: 0.7 }}>
+          <div className="uploadHint">
             {editingPhoto ? "Replace image (optional)" : "Choose image"}
           </div>
           <input type="file" accept="image/*" onChange={onFileChange} />

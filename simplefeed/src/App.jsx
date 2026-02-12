@@ -145,10 +145,10 @@ export default function App() {
   if (!session) {
     return (
       <div className="page">
-        <div className="content" style={{ maxWidth: 420, margin: "0 auto" }}>
+        <div className="content authContent">
           <h2>Sign in</h2>
           <form onSubmit={handleLogin}>
-            <div style={{ display: "grid", gap: 12 }}>
+            <div className="authFields">
               <input
                 type="email"
                 placeholder="Email"
@@ -164,7 +164,7 @@ export default function App() {
                 required
               />
               <button type="submit">Sign in</button>
-              {authError ? <div style={{ color: "crimson" }}>{authError}</div> : null}
+              {authError ? <div className="authError">{authError}</div> : null}
             </div>
           </form>
         </div>
@@ -210,7 +210,7 @@ export default function App() {
         onSubmit={handleFormSubmit}
       />
 
-      <div className="content" style={{ marginTop: 16 }}>
+      <div className="signOutArea">
         <button onClick={handleLogout}>Sign out</button>
       </div>
     </div>
