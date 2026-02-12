@@ -450,6 +450,13 @@
   gap: 12px;
 }
 
+.authFields input,
+.uploadForm input,
+.uploadForm textarea,
+.uploadForm select {
+  font-size: 16px;
+}
+
 .authError {
   color: crimson;
 }
