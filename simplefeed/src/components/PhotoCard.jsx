@@ -1,11 +1,29 @@
+import { useEffect, useState } from "react";
 import editIcon from "../assets/edit.svg";
 import deleteIcon from "../assets/delete.svg";
 
 export default function PhotoCard({ photo, onEdit, onDelete }) {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsImageLoaded(false);
+  }, [photo.feedUrl]);
+
   return (
     <article className="card">
       <div className="photoFrame">
-        <img className="photo" src={photo.feedUrl} alt={photo.caption} />
+        {!isImageLoaded && (
+          <div className="imageLoadingOverlay" aria-hidden="true">
+            <div className="loadingSpinner" />
+          </div>
+        )}
+        <img
+          className={`photo ${isImageLoaded ? "isLoaded" : ""}`}
+          src={photo.feedUrl}
+          alt={photo.caption}
+          onLoad={() => setIsImageLoaded(true)}
+          onError={() => setIsImageLoaded(true)}
+        />
       </div>
       <div className="meta">
         <div className="photoMetaActionsRow">
