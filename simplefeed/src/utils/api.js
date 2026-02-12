@@ -2,7 +2,10 @@
 import { supabase } from "./supabaseClient";
 
 const BUCKET = "photos";
-const SIGNED_URL_TTL = 60 * 60; // 1 hour
+const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
+const IMAGE_CACHE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const SIGNED_URL_REFRESH_BUFFER_MS = 60 * 1000; // refresh 1 minute before expiry
+const signedUrlCache = new Map();
 const GRID_MAX_SIZE = 480;
 const FEED_MAX_SIZE = 1400;
 const GRID_QUALITY = 0.8;
@@ -58,6 +61,25 @@ function compressImage(file, maxSize, quality) {
   });
 }
 
+async function getSignedUrl(storagePath) {
+  const now = Date.now();
+  const cached = signedUrlCache.get(storagePath);
+  if (cached && cached.expiresAtMs > now + SIGNED_URL_REFRESH_BUFFER_MS) {
+    return cached.url;
+  }
+
+  const { data, error } = await supabase
+    .storage
+    .from(BUCKET)
+    .createSignedUrl(storagePath, SIGNED_URL_TTL);
+
+  if (error) throw error;
+
+  const expiresAtMs = now + SIGNED_URL_TTL * 1000;
+  signedUrlCache.set(storagePath, { url: data.signedUrl, expiresAtMs });
+  return data.signedUrl;
+}
+
 export async function loadPhotos() {
   const { data: rows, error } = await supabase
     .from("photos")
@@ -69,24 +91,15 @@ export async function loadPhotos() {
   // Add signed URLs for each photo
   const withUrls = await Promise.all(
     rows.map(async (r) => {
-      const { data: gridData, error: gridError } = await supabase
-        .storage
-        .from(BUCKET)
-        .createSignedUrl(r.storage_path_grid, SIGNED_URL_TTL);
-
-      if (gridError) throw gridError;
-
-      const { data: feedData, error: feedError } = await supabase
-        .storage
-        .from(BUCKET)
-        .createSignedUrl(r.storage_path_feed, SIGNED_URL_TTL);
-
-      if (feedError) throw feedError;
+      const [gridUrl, feedUrl] = await Promise.all([
+        getSignedUrl(r.storage_path_grid),
+        getSignedUrl(r.storage_path_feed),
+      ]);
 
       return {
         id: r.id,
-        gridUrl: gridData.signedUrl,
-        feedUrl: feedData.signedUrl,
+        gridUrl,
+        feedUrl,
         caption: r.caption,
         createdAt: r.created_at,
         takenAt: r.taken_at,
@@ -118,14 +131,20 @@ export async function handleUpload(formData) {
   const { error: uploadGridError } = await supabase
     .storage
     .from(BUCKET)
-    .upload(gridPath, gridBlob, { contentType: "image/jpeg" });
+    .upload(gridPath, gridBlob, {
+      contentType: "image/jpeg",
+      cacheControl: String(IMAGE_CACHE_SECONDS),
+    });
 
   if (uploadGridError) throw uploadGridError;
 
   const { error: uploadFeedError } = await supabase
     .storage
     .from(BUCKET)
-    .upload(feedPath, feedBlob, { contentType: "image/jpeg" });
+    .upload(feedPath, feedBlob, {
+      contentType: "image/jpeg",
+      cacheControl: String(IMAGE_CACHE_SECONDS),
+    });
 
   if (uploadFeedError) throw uploadFeedError;
 
@@ -162,14 +181,20 @@ export async function handleUpdate(photoId, formData, existingPaths) {
     const { error: uploadGridError } = await supabase
       .storage
       .from(BUCKET)
-      .upload(newGridPath, gridBlob, { contentType: "image/jpeg" });
+      .upload(newGridPath, gridBlob, {
+        contentType: "image/jpeg",
+        cacheControl: String(IMAGE_CACHE_SECONDS),
+      });
 
     if (uploadGridError) throw uploadGridError;
 
     const { error: uploadFeedError } = await supabase
       .storage
       .from(BUCKET)
-      .upload(newFeedPath, feedBlob, { contentType: "image/jpeg" });
+      .upload(newFeedPath, feedBlob, {
+        contentType: "image/jpeg",
+        cacheControl: String(IMAGE_CACHE_SECONDS),
+      });
 
     if (uploadFeedError) throw uploadFeedError;
 
@@ -179,6 +204,7 @@ export async function handleUpdate(photoId, formData, existingPaths) {
     if (feedPath) toRemove.push(feedPath);
     if (toRemove.length) {
       await supabase.storage.from(BUCKET).remove(toRemove);
+      toRemove.forEach((path) => signedUrlCache.delete(path));
     }
 
     gridPath = newGridPath;
@@ -213,6 +239,7 @@ export async function handleDelete(photoId, paths) {
       .remove(toRemove);
 
     if (removeError) throw removeError;
+    toRemove.forEach((path) => signedUrlCache.delete(path));
   }
 
   const { error } = await supabase
@@ -222,4 +249,3 @@ export async function handleDelete(photoId, paths) {
 
   if (error) throw error;
 }
-

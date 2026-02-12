@@ -13,7 +13,9 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [authMode, setAuthMode] = useState("signin");
   const [authError, setAuthError] = useState("");
+  const [authInfo, setAuthInfo] = useState("");
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -21,6 +23,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState("feed");
   const [editingPhoto, setEditingPhoto] = useState(null);
   const postRefs = useRef(new Map());
+  const userId = session?.user?.id ?? null;
 
   const form = usePhotoForm();
 
@@ -46,12 +49,12 @@ export default function App() {
 
   // Load photos after login
   useEffect(() => {
-    if (!session) return;
+    if (!userId) return;
     (async () => {
       const data = await fetchPhotos();
       setPhotos(data);
     })();
-  }, [session]);
+  }, [userId]);
 
   // Setup drag-drop
   useDragDrop(
@@ -127,33 +130,64 @@ export default function App() {
     }, 0);
   }
 
-  async function handleLogin(e) {
+  async function handleAuthSubmit(e) {
     e.preventDefault();
     setAuthError("");
-    const { error } = await supabase.auth.signInWithPassword({
+    setAuthInfo("");
+
+    if (authMode === "signin") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: authEmail,
+        password: authPassword,
+      });
+      if (error) setAuthError(error.message);
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signUp({
       email: authEmail,
       password: authPassword,
     });
-    if (error) setAuthError(error.message);
+
+    if (error) {
+      setAuthError(error.message);
+      return;
+    }
+
+    if (data?.session) {
+      setAuthInfo("Account created. You are signed in.");
+      return;
+    }
+
+    setAuthInfo("Account created. Check your email to confirm, then sign in.");
+    setAuthMode("signin");
   }
 
   async function handleLogout() {
     setAuthError("");
+    setAuthInfo("");
     await supabase.auth.signOut();
+  }
+
+  function toggleAuthMode() {
+    setAuthMode((prev) => (prev === "signin" ? "signup" : "signin"));
+    setAuthError("");
+    setAuthInfo("");
   }
 
   if (!session) {
     return (
       <div className="page">
         <div className="content authContent">
-          <h2>Sign in</h2>
-          <form onSubmit={handleLogin}>
+          <h2>{authMode === "signin" ? "Sign in" : "Create account"}</h2>
+          <form onSubmit={handleAuthSubmit}>
             <div className="authFields">
               <input
                 type="email"
                 placeholder="Email"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
+                autoComplete="email"
                 required
               />
               <input
@@ -161,10 +195,20 @@ export default function App() {
                 placeholder="Password"
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
+                autoComplete={authMode === "signin" ? "current-password" : "new-password"}
+                minLength={6}
                 required
               />
-              <button type="submit">Sign in</button>
+              <button type="submit">
+                {authMode === "signin" ? "Sign in" : "Create account"}
+              </button>
               {authError ? <div className="authError">{authError}</div> : null}
+              {authInfo ? <div className="authInfo">{authInfo}</div> : null}
+              <button type="button" className="authSwitchBtn" onClick={toggleAuthMode}>
+                {authMode === "signin"
+                  ? "Need an account? Create one"
+                  : "Already have an account? Sign in"}
+              </button>
             </div>
           </form>
         </div>

@@ -46,7 +46,7 @@
 }
 
 .headerTitleIcon {
-  width: 140px;
+  width: 82px;
   height: auto;
   display: block;
 }
@@ -454,6 +454,17 @@
   color: crimson;
 }
 
+.authInfo {
+  color: #166534;
+}
+
+.authSwitchBtn {
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .signOutArea {
   margin-top: auto;
   padding-top: 16px;
@@ -522,7 +533,7 @@
   }
 
   .headerTitleIcon {
-    width: 82px;
+    width: 140px;
   }
 
   .headerSubtitle {
