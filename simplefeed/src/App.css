@@ -296,6 +296,18 @@
 
 .closeBtn {
   font-size: 18px;
+  border: 2px solid #222;
+  background: #f7f7f7;
+  color: #111;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: #efefef;
+  border-color: #555;
 }
 
 .previewContainer {
@@ -336,6 +348,27 @@
   gap: 8px;
   justify-content: flex-end;
   margin-top: 6px;
+}
+
+.formActions button {
+  padding: 10px 12px;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #f7f7f7;
+  color: #111;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.formActions button:hover {
+  background: #efefef;
+  border-color: #555;
+}
+
+.formActions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Photo metadata */
@@ -441,6 +474,30 @@
 .authFields {
   display: grid;
   gap: 12px;
+}
+
+.authFields button,
+.signOutArea button {
+  padding: 10px 12px;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #f7f7f7;
+  color: #111;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.authFields button:hover,
+.signOutArea button:hover {
+  background: #efefef;
+  border-color: #555;
+}
+
+.authFields button:disabled,
+.signOutArea button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .authFields input,
