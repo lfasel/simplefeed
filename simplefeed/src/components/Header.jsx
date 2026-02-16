@@ -14,7 +14,7 @@ export default function Header({
       <div className="headerContent">
         <div className="headerTitle">
           <img src={lifeIcon} alt="Life" className="headerTitleIcon" />
-          <div className="headerSubtitle">in pictures</div>
+          <div className="headerSubtitle">photo album</div>
         </div>
 
         <div className="headerControls">

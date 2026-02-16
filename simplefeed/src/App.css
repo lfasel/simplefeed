@@ -52,9 +52,9 @@
 }
 
 .headerSubtitle {
-  font-size: 10px;
+  font-size: 9px;
   text-transform: lowercase;
-  letter-spacing: 6px;
+  letter-spacing: 4px;
   opacity: 0.8;
   text-align: center;
   max-width: 120px;
@@ -75,10 +75,11 @@
 
 /* Feed / cards */
 .post {
-  margin-bottom: 16px;
+  margin-bottom: 65px;
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
+  scroll-margin-top: 88px;
 }
 
 .card {
@@ -329,14 +330,6 @@
   opacity: 0.75;
 }
 
-.coordInputs {
-  display: flex;
-  gap: 8px;
-}
-
-.coordInputs input {
-  flex: 1;
-}
 
 .formActions {
   display: flex;
@@ -405,7 +398,7 @@
 }
 
 .actionBtn {
-  padding: 12px 12px;
+  padding: 8px 8px;
   background: #f7f7f7;
   border-radius: 12px;
   cursor: pointer;
@@ -545,6 +538,7 @@
 
   .headerSubtitle {
     font-size: 14px;
+    letter-spacing: 5px;
     max-width: 150px;
   }
 
@@ -564,6 +558,10 @@
   .viewModeButtons button img {
     width: 40px;
     height: 40px;
+  }
+
+  .post {
+    scroll-margin-top: 95px;
   }
 }
 

@@ -6,16 +6,12 @@ export default function UploadModal({
   caption,
   locationName,
   takenAtLocal,
-  lat,
-  lon,
   loading,
   onClose,
   onFileChange,
   onCaptionChange,
   onLocationNameChange,
   onTakenAtLocalChange,
-  onLatChange,
-  onLonChange,
   onSubmit,
 }) {
   if (!isOpen) return null;
@@ -64,19 +60,6 @@ export default function UploadModal({
             value={takenAtLocal}
             onChange={onTakenAtLocalChange}
           />
-
-          <div className="coordInputs">
-            <input
-              placeholder="Latitude (optional)"
-              value={lat}
-              onChange={onLatChange}
-            />
-            <input
-              placeholder="Longitude (optional)"
-              value={lon}
-              onChange={onLonChange}
-            />
-          </div>
 
           <div className="formActions">
             <button type="button" onClick={onClose}>

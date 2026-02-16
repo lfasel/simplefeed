@@ -241,16 +241,12 @@ export default function App() {
         caption={form.caption}
         locationName={form.locationName}
         takenAtLocal={form.takenAtLocal}
-        lat={form.lat}
-        lon={form.lon}
         loading={loading}
         onClose={closeUploadModal}
         onFileChange={(e) => form.handleNewFile(e.target.files?.[0] ?? null)}
         onCaptionChange={(e) => form.setCaption(e.target.value)}
         onLocationNameChange={(e) => form.setLocationName(e.target.value)}
         onTakenAtLocalChange={(e) => form.setTakenAtLocal(e.target.value)}
-        onLatChange={(e) => form.setLat(e.target.value)}
-        onLonChange={(e) => form.setLon(e.target.value)}
         onSubmit={handleFormSubmit}
       />
 
