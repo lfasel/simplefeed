@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { loadPhotos as fetchPhotos, handleUpload as uploadPhoto, handleUpdate as updatePhoto, handleDelete as deletePhoto } from "./utils/api.js";
 import { useDragDrop } from "./hooks/useDragDrop.js";
@@ -24,9 +24,15 @@ export default function App() {
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [viewMode, setViewMode] = useState("feed");
   const [editingPhoto, setEditingPhoto] = useState(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const postRefs = useRef(new Map());
+  const contentRef = useRef(null);
+  const touchStartYRef = useRef(null);
   const userId = session?.user?.id ?? null;
   const cacheKey = userId ? `simplefeed.photos.${userId}` : null;
+  const PULL_TRIGGER_PX = 72;
+  const PULL_MAX_PX = 120;
 
   const form = usePhotoForm();
 
@@ -52,6 +58,20 @@ export default function App() {
     };
   }, []);
 
+  // Fetches latest photos and optionally drives pull-to-refresh UI.
+  const refreshPhotos = useCallback(async (showRefreshIndicator = false) => {
+    if (!userId) return;
+    if (showRefreshIndicator) setIsRefreshing(true);
+    try {
+      const data = await fetchPhotos();
+      setPhotos(data);
+    } catch (error) {
+      console.error("Failed to load photos", error);
+    } finally {
+      if (showRefreshIndicator) setIsRefreshing(false);
+    }
+  }, [userId]);
+
   // Hydrate from local cache first, then refresh from server.
   useEffect(() => {
     if (!userId) {
@@ -71,15 +91,8 @@ export default function App() {
       }
     }
 
-    (async () => {
-      try {
-        const data = await fetchPhotos();
-        setPhotos(data);
-      } catch (error) {
-        console.error("Failed to load photos", error);
-      }
-    })();
-  }, [cacheKey, userId]);
+    refreshPhotos();
+  }, [cacheKey, refreshPhotos, userId]);
 
   useEffect(() => {
     // Persist latest list for faster warm starts on next app launch.
@@ -90,6 +103,36 @@ export default function App() {
       // ignore cache write failures
     }
   }, [cacheKey, photos]);
+
+  // On mobile, pulling down from top triggers a lightweight refresh.
+  function handleContentTouchStart(e) {
+    const el = contentRef.current;
+    if (!el || el.scrollTop > 0 || loading || isRefreshing) return;
+    touchStartYRef.current = e.touches?.[0]?.clientY ?? null;
+  }
+
+  function handleContentTouchMove(e) {
+    const startY = touchStartYRef.current;
+    if (startY == null) return;
+
+    const currentY = e.touches?.[0]?.clientY ?? startY;
+    const delta = currentY - startY;
+    if (delta <= 0) {
+      setPullDistance(0);
+      return;
+    }
+
+    const damped = Math.min(PULL_MAX_PX, delta * 0.5);
+    setPullDistance(damped);
+  }
+
+  async function handleContentTouchEnd() {
+    touchStartYRef.current = null;
+    if (pullDistance >= PULL_TRIGGER_PX) {
+      await refreshPhotos(true);
+    }
+    setPullDistance(0);
+  }
 
   // Global file drag/drop opens the upload modal with the dropped image.
   useDragDrop(
@@ -134,8 +177,7 @@ export default function App() {
       }
 
       // Refresh after upload/update to sync generated URLs and metadata.
-      const data = await fetchPhotos();
-      setPhotos(data);
+      await refreshPhotos();
       closeUploadModal();
     } catch (error) {
       alert(error.message);
@@ -154,8 +196,7 @@ export default function App() {
         feed: photo.storagePathFeed,
       });
       // Reload after delete to keep UI consistent with remote state.
-      const data = await fetchPhotos();
-      setPhotos(data);
+      await refreshPhotos();
     } catch (error) {
       alert(error.message);
     }
@@ -270,6 +311,8 @@ export default function App() {
   }
 
   // Main authenticated app shell.
+  const pullIndicatorHeight = isRefreshing ? 56 : pullDistance;
+
   return (
     <div className="page">
       <Header
@@ -279,7 +322,21 @@ export default function App() {
         isDraggingFile={isDraggingFile}
       />
 
-      <div className="content">
+      <div
+        className="content"
+        ref={contentRef}
+        onTouchStart={handleContentTouchStart}
+        onTouchMove={handleContentTouchMove}
+        onTouchEnd={handleContentTouchEnd}
+        onTouchCancel={handleContentTouchEnd}
+      >
+        <div
+          className={`pullToRefresh ${isRefreshing ? "isRefreshing" : ""}`}
+          style={{ height: `${pullIndicatorHeight}px` }}
+          aria-hidden="true"
+        >
+          <div className={`loadingSpinner ${pullDistance >= PULL_TRIGGER_PX || isRefreshing ? "isVisible" : ""}`} />
+        </div>
         {viewMode === "feed" ? (
           <PhotoFeed photos={photos} postRefs={postRefs} onEdit={openEdit} onDelete={handleDeletePhoto} />
         ) : (
