@@ -14,6 +14,7 @@ export default function UploadModal({
   onTakenAtLocalChange,
   onSubmit,
 }) {
+  // Keep modal unmounted when closed to reset browser-native file input state.
   if (!isOpen) return null;
 
   return (

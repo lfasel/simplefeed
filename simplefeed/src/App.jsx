@@ -10,6 +10,7 @@ import PhotoGrid from "./components/PhotoGrid.jsx";
 import { supabase } from "./utils/supabaseClient.js";
 
 export default function App() {
+  // Auth and app bootstrap state.
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
@@ -29,7 +30,7 @@ export default function App() {
 
   const form = usePhotoForm();
 
-  // Auth session
+  // Resolve existing session before rendering auth UI to avoid login flicker.
   useEffect(() => {
     let isMounted = true;
 
@@ -51,7 +52,7 @@ export default function App() {
     };
   }, []);
 
-  // Load photos after login
+  // Hydrate from local cache first, then refresh from server.
   useEffect(() => {
     if (!userId) {
       setPhotos([]);
@@ -81,6 +82,7 @@ export default function App() {
   }, [cacheKey, userId]);
 
   useEffect(() => {
+    // Persist latest list for faster warm starts on next app launch.
     if (!cacheKey) return;
     try {
       localStorage.setItem(cacheKey, JSON.stringify(photos));
@@ -89,7 +91,7 @@ export default function App() {
     }
   }, [cacheKey, photos]);
 
-  // Setup drag-drop
+  // Global file drag/drop opens the upload modal with the dropped image.
   useDragDrop(
     () => setIsDraggingFile(true),
     () => setIsDraggingFile(false),
@@ -101,12 +103,14 @@ export default function App() {
   );
 
   function openEdit(photo) {
+    // Reuse upload modal for editing existing entries.
     setEditingPhoto(photo);
     setIsUploadOpen(true);
     form.prefillFromPhoto(photo);
   }
 
   function closeUploadModal() {
+    // Ensure form state is clean whenever modal closes.
     setIsUploadOpen(false);
     setEditingPhoto(null);
     form.resetForm();
@@ -129,6 +133,7 @@ export default function App() {
         await uploadPhoto(formData);
       }
 
+      // Refresh after upload/update to sync generated URLs and metadata.
       const data = await fetchPhotos();
       setPhotos(data);
       closeUploadModal();
@@ -148,6 +153,7 @@ export default function App() {
         grid: photo.storagePathGrid,
         feed: photo.storagePathFeed,
       });
+      // Reload after delete to keep UI consistent with remote state.
       const data = await fetchPhotos();
       setPhotos(data);
     } catch (error) {
@@ -156,6 +162,7 @@ export default function App() {
   }
 
   function goToPhoto(id) {
+    // Switch to feed and scroll once the feed is mounted.
     setViewMode("feed");
     setTimeout(() => {
       const el = postRefs.current.get(id);
@@ -208,6 +215,7 @@ export default function App() {
     setAuthInfo("");
   }
 
+  // Startup gate while session restoration is in flight.
   if (!authReady) {
     return (
       <div className="page">
@@ -219,6 +227,7 @@ export default function App() {
     );
   }
 
+  // Unauthenticated screen.
   if (!session) {
     return (
       <div className="page">
@@ -260,6 +269,7 @@ export default function App() {
     );
   }
 
+  // Main authenticated app shell.
   return (
     <div className="page">
       <Header

@@ -53,6 +53,7 @@ export default function Header({
 
       {isDraggingFile && (
         <div className="dragOverlay">
+          {/* Global drag state is managed by the drag/drop hook in App. */}
           Drop a photo to upload
         </div>
       )}

@@ -4,6 +4,7 @@ function GridImage({ photo, onPhotoClick }) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
+    // Reset loader when a refreshed signed URL is received.
     setIsImageLoaded(false);
   }, [photo.gridUrl]);
 

@@ -6,6 +6,7 @@ export default function PhotoCard({ photo, onEdit, onDelete }) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
+    // Reset loader whenever the signed feed URL changes.
     setIsImageLoaded(false);
   }, [photo.feedUrl]);
 

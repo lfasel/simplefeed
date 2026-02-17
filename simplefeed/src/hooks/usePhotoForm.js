@@ -2,6 +2,7 @@ import { useState } from "react";
 import { parseExifData, createFilePreviewUrl, revokeFilePreviewUrl, isoToDatetimeLocal } from "../utils/fileUtils";
 
 export function usePhotoForm() {
+  // Modal field state.
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState(null);
   const [takenAtLocal, setTakenAtLocal] = useState("");
@@ -25,7 +26,7 @@ export function usePhotoForm() {
     setLocationName("");
     setCaption("");
 
-    // Parse EXIF data
+    // Seed fields from EXIF when available.
     const exifData = await parseExifData(f);
     if (exifData.takenAtLocal) setTakenAtLocal(exifData.takenAtLocal);
     if (exifData.lat) setLat(exifData.lat);
@@ -33,6 +34,7 @@ export function usePhotoForm() {
   }
 
   function prefillFromPhoto(photo) {
+    // Preload current values when editing an existing photo.
     setCaption(photo.caption ?? "");
     setLocationName(photo.locationName ?? "");
     setTakenAtLocal(isoToDatetimeLocal(photo.takenAt));
@@ -43,6 +45,7 @@ export function usePhotoForm() {
   }
 
   function resetForm() {
+    // Revoke temporary blob URLs to avoid memory leaks.
     setCaption("");
     setFile(null);
     setTakenAtLocal("");
@@ -54,6 +57,7 @@ export function usePhotoForm() {
   }
 
   function createFormData() {
+    // Keep payload schema aligned with backend API contract.
     const form = new FormData();
     if (file) form.append("image", file);
     form.append("caption", caption);

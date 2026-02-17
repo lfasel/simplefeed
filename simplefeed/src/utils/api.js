@@ -1,6 +1,7 @@
 //const API = "http://localhost:4000";
 import { supabase } from "./supabaseClient";
 
+// Storage and image generation settings.
 const BUCKET = "photos";
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 const IMAGE_CACHE_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -12,12 +13,14 @@ const GRID_QUALITY = 0.8;
 const FEED_QUALITY = 0.9;
 
 function makeBaseName(file) {
+  // Create collision-resistant filenames while preserving a readable hint.
   const rand = Math.random().toString(36).slice(2, 10);
   const safeName = (file?.name || "image").replace(/[^a-zA-Z0-9_-]+/g, "-");
   return `${Date.now()}-${rand}-${safeName}`;
 }
 
 function compressImage(file, maxSize, quality) {
+  // Client-side downscaling keeps uploads fast and consistent.
   return new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
@@ -62,6 +65,7 @@ function compressImage(file, maxSize, quality) {
 }
 
 async function getSignedUrl(storagePath) {
+  // Reuse valid signed URLs in memory to avoid repeated storage calls.
   const now = Date.now();
   const cached = signedUrlCache.get(storagePath);
   if (cached && cached.expiresAtMs > now + SIGNED_URL_REFRESH_BUFFER_MS) {
@@ -88,7 +92,7 @@ export async function loadPhotos() {
 
   if (error) throw error;
 
-  // Add signed URLs for each photo
+  // Attach view-ready signed URLs to each database row.
   const withUrls = await Promise.all(
     rows.map(async (r) => {
       const [gridUrl, feedUrl] = await Promise.all([
@@ -116,6 +120,7 @@ export async function loadPhotos() {
 }
 
 export async function handleUpload(formData) {
+  // Create both grid and feed renditions from one original image.
   const file = formData.get("image");
   if (!file) throw new Error("Missing image file");
 
@@ -169,6 +174,7 @@ export async function handleUpdate(photoId, formData, existingPaths) {
   let feedPath = existingPaths?.feed;
 
   if (file) {
+    // If image changed, upload replacement files and delete old ones.
     const baseName = makeBaseName(file);
     const newGridPath = `${baseName}-grid.jpg`;
     const newFeedPath = `${baseName}-feed.jpg`;
@@ -198,7 +204,7 @@ export async function handleUpdate(photoId, formData, existingPaths) {
 
     if (uploadFeedError) throw uploadFeedError;
 
-    // delete old files
+    // Delete old storage files and drop their cached signed URLs.
     const toRemove = [];
     if (gridPath) toRemove.push(gridPath);
     if (feedPath) toRemove.push(feedPath);
@@ -229,6 +235,7 @@ export async function handleUpdate(photoId, formData, existingPaths) {
 
 
 export async function handleDelete(photoId, paths) {
+  // Remove storage objects first, then delete DB row.
   const toRemove = [];
   if (paths?.grid) toRemove.push(paths.grid);
   if (paths?.feed) toRemove.push(paths.feed);
