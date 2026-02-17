@@ -11,6 +11,7 @@ import { supabase } from "./utils/supabaseClient.js";
 
 export default function App() {
   const [session, setSession] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authMode, setAuthMode] = useState("signin");
@@ -24,6 +25,7 @@ export default function App() {
   const [editingPhoto, setEditingPhoto] = useState(null);
   const postRefs = useRef(new Map());
   const userId = session?.user?.id ?? null;
+  const cacheKey = userId ? `simplefeed.photos.${userId}` : null;
 
   const form = usePhotoForm();
 
@@ -35,10 +37,12 @@ export default function App() {
       if (!isMounted) return;
       if (error) setAuthError(error.message);
       setSession(data?.session ?? null);
+      setAuthReady(true);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
+      setAuthReady(true);
     });
 
     return () => {
@@ -49,12 +53,41 @@ export default function App() {
 
   // Load photos after login
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setPhotos([]);
+      return;
+    }
+
+    if (cacheKey) {
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed)) setPhotos(parsed);
+        }
+      } catch {
+        // ignore invalid cache
+      }
+    }
+
     (async () => {
-      const data = await fetchPhotos();
-      setPhotos(data);
+      try {
+        const data = await fetchPhotos();
+        setPhotos(data);
+      } catch (error) {
+        console.error("Failed to load photos", error);
+      }
     })();
-  }, [userId]);
+  }, [cacheKey, userId]);
+
+  useEffect(() => {
+    if (!cacheKey) return;
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(photos));
+    } catch {
+      // ignore cache write failures
+    }
+  }, [cacheKey, photos]);
 
   // Setup drag-drop
   useDragDrop(
@@ -173,6 +206,17 @@ export default function App() {
     setAuthMode((prev) => (prev === "signin" ? "signup" : "signin"));
     setAuthError("");
     setAuthInfo("");
+  }
+
+  if (!authReady) {
+    return (
+      <div className="page">
+        <div className="content authContent appBoot">
+          <div className="loadingSpinner" aria-hidden="true" />
+          <div>Loading...</div>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
