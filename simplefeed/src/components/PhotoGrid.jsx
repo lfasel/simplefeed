@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Spinner from "./Spinner";
 
 function GridImage({ photo, onPhotoClick }) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -12,7 +13,7 @@ function GridImage({ photo, onPhotoClick }) {
     <div className="gridItem gridItemClickable" onClick={() => onPhotoClick(photo.id)}>
       {!isImageLoaded && (
         <div className="imageLoadingOverlay" aria-hidden="true">
-          <div className="loadingSpinner loadingSpinnerSmall" />
+          <Spinner small />
         </div>
       )}
       <img

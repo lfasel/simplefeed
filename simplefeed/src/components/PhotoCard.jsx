@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import editIcon from "../assets/edit.svg";
 import deleteIcon from "../assets/delete.svg";
+import Spinner from "./Spinner";
 
 export default function PhotoCard({ photo, onEdit, onDelete }) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -15,7 +16,7 @@ export default function PhotoCard({ photo, onEdit, onDelete }) {
       <div className="photoFrame">
         {!isImageLoaded && (
           <div className="imageLoadingOverlay" aria-hidden="true">
-            <div className="loadingSpinner" />
+            <Spinner />
           </div>
         )}
         <img

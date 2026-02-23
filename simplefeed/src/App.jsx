@@ -7,6 +7,7 @@ import Header from "./components/Header.jsx";
 import UploadModal from "./components/UploadModal.jsx";
 import PhotoFeed from "./components/PhotoFeed.jsx";
 import PhotoGrid from "./components/PhotoGrid.jsx";
+import Spinner from "./components/Spinner.jsx";
 import { supabase } from "./utils/supabaseClient.js";
 
 export default function App() {
@@ -261,7 +262,7 @@ export default function App() {
     return (
       <div className="page">
         <div className="content authContent appBoot">
-          <div className="loadingSpinner" aria-hidden="true" />
+          <Spinner />
           <div>Loading...</div>
         </div>
       </div>
@@ -335,7 +336,9 @@ export default function App() {
           style={{ height: `${pullIndicatorHeight}px` }}
           aria-hidden="true"
         >
-          <div className={`loadingSpinner ${pullDistance >= PULL_TRIGGER_PX || isRefreshing ? "isVisible" : ""}`} />
+          <Spinner
+            className={pullDistance >= PULL_TRIGGER_PX || isRefreshing ? "isVisible" : ""}
+          />
         </div>
         {viewMode === "feed" ? (
           <PhotoFeed photos={photos} postRefs={postRefs} onEdit={openEdit} onDelete={handleDeletePhoto} />
