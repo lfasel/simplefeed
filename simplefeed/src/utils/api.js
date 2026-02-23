@@ -1,4 +1,3 @@
-//const API = "http://localhost:4000";
 import { supabase } from "./supabaseClient";
 
 // Storage and image generation settings.
